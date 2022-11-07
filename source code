@@ -1,0 +1,397 @@
+/* Name of Program: projectOneJava.java
+ * Purpose of Program: Create a Tic-Tac-Toe game
+ * Author of Program: B. Yacoob
+ */
+
+// Import of packages
+package projectOneJava;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+// Superclass that is a child of JFrame to inherit its methods and properties
+public class projectOneJava extends JFrame {
+	// Declaration of variables
+	private JPanel panelForGrid, mainBorderPanel, bottomGridPanel, playerGridPanel;	// Panels
+	private JLabel playerOneLabel, winsPOne, lossesPOne, winsPOneCounter, lossesPOneCounter;	// Counters
+	private JLabel playerTwoLabel, winsPTwo, lossesPTwo, winsPTwoCounter, lossesPTwoCounter;
+	private JTextField playerOneTextField, playerTwoTextField;
+	private JButton newGameButton, resetGameButton, exitGameButton;	// Buttons
+	private JButton[] btns = new JButton[9];	// Creating nine buttons for middle grid panel
+	private double coinFlip = Math.random();
+	private int winCounterPOne = 0, lossCounterPOne = 0, winCounterPTwo = 0, lossCounterPTwo = 0, numOfTiles = 0;;
+	private String[] gameBoard = new String[9];	// Array game board
+	private String[][] markGameBoard = new String[3][3];
+	private String pOneNameResult = pOneName(), pTwoNameResult = pTwoName(), currentUserTurn, currentSymbol = "X";
+	private final int WINDOW_WIDTH = 400;	// Window width
+	private final int WINDOW_HEIGHT = 400;	// Window height
+	
+	// Constructor
+	public projectOneJava() {
+		// Setting the title
+		setTitle("Tic-Tac-Toe");
+		
+		// Setting size of the window
+		setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+		
+		// What happens when close button is clicked
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		// What the smaller panels will be added on top of
+		mainBorderPanel = new JPanel();
+		
+		mainBorderPanel.setLayout(new BorderLayout());
+		
+		// Building the panel and adding it to the main frame
+		playerGridPanel();	// Top
+		ticTacToeGridPanel();	// Middle
+		bottomGridPanel();	// Bottom
+		
+		add(mainBorderPanel);	// This adds the panel to the content frame
+		
+		// Visibility is shown for the window
+		setVisible(true);
+	}
+	
+	// UI to find first player's name
+	private String pOneName() {
+		return JOptionPane.showInputDialog("Hello Player 1! Enter a username:");
+	}
+	
+	// UI to find second player's name
+	private String pTwoName() {
+		return JOptionPane.showInputDialog("Hello Player 2! Enter a username:");
+	}
+	
+	private void playerGridPanel() {
+		// Create labels with instructions on it
+		playerOneLabel = new JLabel("Player 1");
+		playerOneTextField = new JTextField(15);
+				
+		playerTwoLabel = new JLabel("Player 2");
+		playerTwoTextField = new JTextField(15);
+				
+		winsPOne = new JLabel("Wins");
+		winsPOneCounter = new JLabel("" + winCounterPOne);
+		
+		lossesPOne = new JLabel("Losses");
+		lossesPOneCounter = new JLabel("" + lossCounterPOne);
+				
+		winsPTwo = new JLabel("Wins");
+		winsPTwoCounter = new JLabel("" + winCounterPTwo);
+		
+		lossesPTwo = new JLabel("Losses");
+		lossesPTwoCounter = new JLabel("" + lossCounterPTwo);
+		
+		playerGridPanel = new JPanel();
+		
+		playerGridPanel.setLayout(new GridLayout(3, 4));
+		
+		// Adding all of these components to the panel
+		playerGridPanel.add(playerOneLabel);
+		playerGridPanel.add(playerOneTextField);
+		playerGridPanel.add(playerTwoLabel);
+		playerGridPanel.add(playerTwoTextField);
+		playerGridPanel.add(winsPOne);
+		playerGridPanel.add(winsPOneCounter);
+		playerGridPanel.add(winsPTwo);
+		playerGridPanel.add(winsPTwoCounter);
+		playerGridPanel.add(lossesPOne);
+		playerGridPanel.add(lossesPOneCounter);
+		playerGridPanel.add(lossesPTwo);
+		playerGridPanel.add(lossesPTwoCounter);
+		
+		mainBorderPanel.add(playerGridPanel, BorderLayout.NORTH);	// Adding to the main panel
+		
+		// Determining which of the players goes first dependent on randomized coinFlip value
+		if (coinFlip < 0.5) {
+			JOptionPane.showMessageDialog(null, pOneNameResult.concat(" got Heads (X)! They go first."));	// Display
+			playerOneLabel.setText(playerOneLabel.getText().concat(" (X)"));
+			playerTwoLabel.setText(playerTwoLabel.getText().concat(" (O)"));
+			currentUserTurn = pOneNameResult;	// Player 1 goes first
+		}
+		else {
+			JOptionPane.showMessageDialog(null, pTwoNameResult.concat(" got Heads (X)! They go first."));	// Display
+			playerOneLabel.setText(playerOneLabel.getText().concat(" (O)"));
+			playerTwoLabel.setText(playerTwoLabel.getText().concat(" (X)"));
+			currentUserTurn = pTwoNameResult;	// Player 2 goes first
+		}
+		
+		// Store into blank textfield and update who gets 'X' or 'O'
+		playerOneTextField.setText(pOneNameResult);
+		playerTwoTextField.setText(pTwoNameResult);
+	}
+	
+	// Method to ask for new game names
+	private void resetNames() {
+		// Resetting the names and current symbol value
+		pOneNameResult = pOneName();
+		pTwoNameResult = pTwoName();
+		currentSymbol = "X";
+		
+		playerGridPanel();
+	}
+	
+	// Panel for the Tic-Tac-Toe panel layout
+	private void ticTacToeGridPanel() {
+		// Creating a panel
+		panelForGrid = new JPanel();
+				
+		// Add a GridLayout to the content pane
+		panelForGrid.setLayout(new GridLayout(3, 3));
+				
+		for (int i = 0; i < 9; i++) {	// Loop to create the nine buttons and add them to panel
+			btns[i] = new JButton();
+			
+			btns[i].setName("" + i);	// Each button with a specific index position
+								
+			// Add the buttons to the panel
+			panelForGrid.add(btns[i]);
+					
+			// Register an event listener with the nine buttons
+			btns[i].addActionListener(new ButtonListener());
+		}
+		
+		// Adding the panel to the content pane
+		add(panelForGrid);
+		
+		mainBorderPanel.add(panelForGrid, BorderLayout.CENTER);
+	}
+	
+	// Resetting scores of both Player 1 and Player 2 if "Reset" button is pressed
+	private void resetScores() {
+		winCounterPOne = 0;
+		lossCounterPOne = 0;
+		winCounterPTwo = 0;
+		lossCounterPTwo = 0;
+		
+		winsPOneCounter.setText("" + winCounterPOne);
+		lossesPOneCounter.setText("" + lossCounterPOne);	// Reset Player 1 score
+		winsPTwoCounter.setText("" + winCounterPTwo);
+		lossesPTwoCounter.setText("" + lossCounterPTwo);	// Reset Player 2 score
+	}
+	
+	// Winner combinations' function for the game
+	private void checkWinner(JButton buttonClicked) {
+		for (int i = 0; i < 9; i++) {
+			gameBoard[i] = buttonClicked.getName();	// Get the assigned number with each grid
+			
+				// As looping through each index position of gridLayout, hardcode the matrix values that correspond to each grid
+				switch (Integer.parseInt(gameBoard[i])) {	// Convert from String to integer
+					case 0:	markGameBoard[0][0] = buttonClicked.getText();
+					buttonClicked.setEnabled(false);	// Not able to change grid tile once filled
+						break;
+					case 1:	markGameBoard[0][1] = buttonClicked.getText();
+					buttonClicked.setEnabled(false);
+						break;
+					case 2:	markGameBoard[0][2] = buttonClicked.getText();
+					buttonClicked.setEnabled(false);
+						break;
+					case 3:	markGameBoard[1][0] = buttonClicked.getText();
+					buttonClicked.setEnabled(false);
+						break;
+					case 4:	markGameBoard[1][1] = buttonClicked.getText();
+					buttonClicked.setEnabled(false);
+						break;
+					case 5:	markGameBoard[1][2] = buttonClicked.getText();
+					buttonClicked.setEnabled(false);
+						break;
+					case 6:	markGameBoard[2][0] = buttonClicked.getText();
+					buttonClicked.setEnabled(false);
+						break;
+					case 7:	markGameBoard[2][1] = buttonClicked.getText();
+					buttonClicked.setEnabled(false);
+						break;
+					case 8:	markGameBoard[2][2] = buttonClicked.getText();
+					buttonClicked.setEnabled(false);
+						break;
+					default:
+						break;
+				}
+			}
+		
+		// Checking each row and column for the game-winning index positions
+		for (int i = 0; i < 3; i++) {
+				// Rows
+				if (markGameBoard[i][0] == markGameBoard[i][1] && markGameBoard[i][1] == markGameBoard[i][2] && markGameBoard[i][2] == buttonClicked.getText()) {
+					declareWinner();
+					break;
+				}
+				// Columns
+				else if (markGameBoard[0][i] == markGameBoard[1][i] && markGameBoard[1][i] == markGameBoard[2][i] && markGameBoard[2][i] == buttonClicked.getText()) {
+					declareWinner();
+					break;
+				}
+				// First diagonal
+				else if (markGameBoard[0][2] == markGameBoard[1][1] && markGameBoard[1][1] == markGameBoard[2][0] && markGameBoard[2][0] == buttonClicked.getText()) {
+					declareWinner();
+					break;
+				}
+				// Second diagonal
+				else if (markGameBoard[0][0] == markGameBoard[1][1] && markGameBoard[1][1] == markGameBoard[2][2] && markGameBoard[2][2] == buttonClicked.getText()) {
+					declareWinner();
+					break;
+				}
+				// Tie game
+				else {
+					if (numOfTiles == 9) {	// Determines if the game is a tie when all of the grid tiles are filled
+						JOptionPane.showMessageDialog(null, "It is a tie! None of you won the game. Whoever took the last tile before the game restarted plays first next round. Scores are kept the same.");
+						createNewGame();
+					}
+				}
+			}
+	}
+	
+	// Declare winner and update the scores
+	private void declareWinner() {
+		if (currentUserTurn == pOneNameResult) {
+			JOptionPane.showMessageDialog(null, pTwoNameResult.concat(" won the game! Whoever took the last tile before the game restarted plays first next round. Scores are now updated!"));
+			
+			winCounterPTwo += 1;	// Increment win for Player 2
+			lossCounterPOne += 1;	// Increment loss for Player 1
+			
+			winsPOneCounter.setText("" + winCounterPOne);
+			lossesPOneCounter.setText("" + lossCounterPOne);
+			winsPTwoCounter.setText("" + winCounterPTwo);
+			lossesPTwoCounter.setText("" + lossCounterPTwo);
+		}
+		else if (currentUserTurn == pTwoNameResult){
+			JOptionPane.showMessageDialog(null, pOneNameResult.concat(" won the game! Whoever took the last tile before the game restarted plays first next round. Scores are now updated!"));
+			
+			winCounterPOne += 1;	// Increment win for Player 1
+			lossCounterPTwo += 1;	// Increment loss for Player 2
+			
+			winsPOneCounter.setText("" + winCounterPOne);
+			lossesPOneCounter.setText("" + lossCounterPOne);
+			winsPTwoCounter.setText("" + winCounterPTwo);
+			lossesPTwoCounter.setText("" + lossCounterPTwo);
+		}
+		createNewGame();
+	}
+	
+	// Function that creates the panel for the bottom portion of the GUI
+	private void bottomGridPanel() {
+		bottomGridPanel = new JPanel();
+		bottomGridPanel.setLayout(new GridLayout(1, 3));
+		
+		// Buttons with certain captions
+		newGameButton = new JButton("New Game");
+		resetGameButton = new JButton("Reset");
+		exitGameButton = new JButton("Exit");
+		
+		// Register an event listener with the three game buttons
+		newGameButton.addActionListener(new bPanelBtnListener());
+		resetGameButton.addActionListener(new bPanelBtnListener());
+		exitGameButton.addActionListener(new bPanelBtnListener());
+		
+		bottomGridPanel.add(newGameButton);
+		bottomGridPanel.add(resetGameButton);
+		bottomGridPanel.add(exitGameButton);
+		
+		mainBorderPanel.add(bottomGridPanel, BorderLayout.SOUTH);
+	}
+	
+	// Clearing the grid panel of contents
+	private void clearGridContents() {
+		for (int i = 0; i < 9; i++) {
+			gameBoard[i] = "";
+		}
+		
+		for (int i = 0; i < 3; i++) {
+			for (int j = 0; j < 3; j++) {
+				markGameBoard[i][j] = "";
+			}
+		}
+	}
+	
+	// Necessary things to execute if "New Game" is performed
+	private void createNewGame() {
+		panelForGrid.removeAll();	// Remove UI components
+		clearGridContents();
+		ticTacToeGridPanel();	// Rebuild with a new panel
+		mainBorderPanel.revalidate();	// Reset the layout container after new container list
+		
+		firstPlay();	// Decides who goes first
+		
+		numOfTiles = 0;	// Reset counter after a new game is started
+	}
+	
+	// Choosing who gets the first play in the game
+	private void firstPlay() {
+		// When new game is started, whoever was chosen first becomes first again
+		if (currentUserTurn == pOneNameResult) {
+			currentUserTurn = pTwoNameResult;
+			if (currentSymbol == "O") {
+				currentSymbol = "X";
+			} else currentSymbol = "O";
+		}
+		else if (currentUserTurn == pTwoNameResult){
+			currentUserTurn = pOneNameResult;
+			if (currentSymbol == "O") {
+				currentSymbol = "X";
+			} else currentSymbol = "O";
+		}
+	}
+	
+	// What class implements the action listener for each button clicked
+	private class bPanelBtnListener implements ActionListener {
+		// When button is clicked
+		public void actionPerformed(ActionEvent e) {	// Waits for the action
+			String buttonClicked = e.getActionCommand();
+			
+			// Searching for String that equals to what button player chose
+			switch(buttonClicked) {
+			case "New Game":	// Creating a new game would mean new players, new grid, and new scores
+				createNewGame();
+				resetScores();
+				resetNames();	// Making sure when "New Game" is clicked, new names will be put in
+				break;
+			case "Reset":	// Resetting JLabel values to 0 and also resetting the grid, that deals with scores of each player
+				JOptionPane.showMessageDialog(null, "Whoever took the last tile before the game restarted plays first.");
+				createNewGame();
+				resetScores();
+				break;
+			case "Exit":	System.exit(0);; // Close program
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	
+	// Method of determining alternate turns between the players
+	private void alternateTurns(JButton buttonClicked) {
+		// Algorithm of alternating between Player 1 and Player 2
+		if (currentUserTurn == pOneNameResult) {
+			buttonClicked.setText(currentSymbol);
+			currentUserTurn = pTwoNameResult;	// Alternate
+			if (currentSymbol == "O") {
+				currentSymbol = "X";
+			} else currentSymbol = "O";
+		}
+		else if (currentUserTurn == pTwoNameResult) {
+			buttonClicked.setText(currentSymbol);
+			currentUserTurn = pOneNameResult;	// Alternate
+			if (currentSymbol == "O") {
+				currentSymbol = "X";
+			} else currentSymbol = "O";
+		}
+	}
+	
+	// What class implements the action listener for each button clicked
+	private class ButtonListener implements ActionListener {
+		// When button is clicked
+		public void actionPerformed(ActionEvent e) {	// Waits for the action
+			JButton buttonClicked = (JButton)e.getSource();
+			
+			numOfTiles++;	// Increment each time a button is clicked on the middle grid panel
+			alternateTurns(buttonClicked);	// Algorithm that determines the alternation between turns 
+			checkWinner(buttonClicked);	// Method call that determines who is the winner
+			}
+		}
+	
+	public static void main(String[] args) {
+			new projectOneJava();	// Calling the class in main
+	}
+
+}
